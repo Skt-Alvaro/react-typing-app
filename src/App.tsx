@@ -1,24 +1,21 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
+import { keysToIgnore, words } from "./utils/constants";
 
 function App() {
   const [counter, setCounter] = React.useState<number>(0);
-  const [words, setWords] = React.useState<string[]>([
-    "hola",
-    "almeja",
-    "bandido",
-    "camion",
+  const [renderableWords, setRenderableWords] = React.useState<string[]>([
+    ...words,
   ]);
+  const [charClasses, setCharClasses] = React.useState<{
+    [key: string]: string;
+  }>({});
   const [originalActiveWord, setOriginalActiveWord] =
     React.useState<string>("");
   const [activeWord, setActiveWord] = React.useState<number>(0);
   const [activeChar, setActiveChar] = React.useState<number>(0);
   const ref = React.useRef<HTMLDivElement>(null);
-
-  // React.useCallback(() => {
-  //   ref.current?.focus();
-  // }, []);
 
   React.useEffect(() => {
     setOriginalActiveWord(words[activeWord]);
@@ -31,31 +28,39 @@ function App() {
   }, []);
 
   const handleAddMoreChars = (key: string) => {
-    const currentWord = words[activeWord];
+    const currentWord = renderableWords[activeWord];
 
     if (currentWord.length === activeChar) {
-      setWords((prev) => {
+      setRenderableWords((prev) => {
         const newWords = [...prev];
         newWords[activeWord] = currentWord + key;
         return newWords;
       });
     }
+
+    setCharClasses((prev) => {
+      const newClasses = { ...prev };
+      const elementKey = `${activeWord}-${activeChar}`;
+      newClasses[elementKey] = "text-red-500";
+      return newClasses;
+    });
   };
 
   const handleBackspace = () => {
     if (counter > 0) {
-      const element = document.getElementById(
-        `${activeWord}-${activeChar === 0 ? activeChar : activeChar - 1}`
-      ) as HTMLDivElement;
-
-      const currentWord = words[activeWord];
-      element.removeAttribute("class");
+      const currentWord = renderableWords[activeWord];
+      setCharClasses((prev) => {
+        const newClasses = { ...prev };
+        const elementKey = `${activeWord}-${activeChar - 1}`;
+        newClasses[elementKey] = "text-white";
+        return newClasses;
+      });
 
       if (
         currentWord.length === activeChar &&
         originalActiveWord.length < activeChar
       ) {
-        setWords((prev) => {
+        setRenderableWords((prev) => {
           const newWords = [...prev];
           newWords[activeWord] = currentWord.slice(0, -1);
           return newWords;
@@ -64,7 +69,7 @@ function App() {
 
       if (activeChar === 0) {
         setActiveWord(activeWord - 1);
-        setActiveChar(counter);
+        setActiveChar(renderableWords[activeWord - 1].length);
         return;
       } else setCounter(counter - 1);
 
@@ -73,43 +78,14 @@ function App() {
   };
 
   const handleSpace = () => {
-    setActiveChar(0);
-    setActiveWord(activeWord + 1);
+    if (activeChar > 0) {
+      setActiveChar(0);
+      setActiveWord(activeWord + 1);
+    }
   };
 
   const onKeyDown = (key: string) => {
-    const ignoredKeys = [
-      "Shift",
-      "Control",
-      "Alt",
-      "Meta", // Modifier keys
-      "CapsLock",
-      "Tab",
-      "Escape", // Function keys
-      "ArrowUp",
-      "ArrowDown",
-      "ArrowLeft",
-      "ArrowRight", // Arrow keys
-      "VolumeUp",
-      "VolumeDown",
-      "AudioVolumeUp",
-      "AudioVolumeDown",
-      "VolumeMute", // Volume keys
-      "F1",
-      "F2",
-      "F3",
-      "F4",
-      "F5",
-      "F6",
-      "F7",
-      "F8",
-      "F9",
-      "F10",
-      "F11",
-      "F12", // Function keys
-    ];
-
-    if (ignoredKeys.includes(key)) return;
+    if (keysToIgnore.includes(key)) return;
 
     if (key === " ") {
       handleSpace();
@@ -121,14 +97,23 @@ function App() {
       return;
     }
 
+    handleAddMoreChars(key);
+
     const element = document.getElementById(
       `${activeWord}-${activeChar}`
     ) as HTMLDivElement;
 
-    handleAddMoreChars(key);
-
-    if (key === element?.textContent) element.classList.add("text-green-500");
-    else element?.classList.add("text-red-500");
+    if (element)
+      setCharClasses((prev) => {
+        const newClasses = { ...prev };
+        const elementKey = `${activeWord}-${activeChar}`;
+        if (key === element.textContent) {
+          newClasses[elementKey] = "text-green-500";
+        } else {
+          newClasses[elementKey] = "text-red-500";
+        }
+        return newClasses;
+      });
 
     setCounter(counter + 1);
     setActiveChar(activeChar + 1);
@@ -149,7 +134,7 @@ function App() {
           onKeyDown={(e) => onKeyDown(e.key)}
           tabIndex={0}
         >
-          {words.map((word, i) => (
+          {renderableWords.map((word, i) => (
             <div
               key={word}
               className={`text-4xl m-2 ${activeWord === i ? "border-b" : ""}`}
@@ -157,11 +142,7 @@ function App() {
               {word.split("").map((char, index) => (
                 <span
                   id={`${i}-${index}`}
-                  // className={`${
-                  //   activeChar === index && activeWord === i
-                  //     ? "text-red-500 text-wrap"
-                  //     : ""
-                  // }`}
+                  className={charClasses[`${i}-${index}`] || ""}
                 >
                   {char}
                 </span>
