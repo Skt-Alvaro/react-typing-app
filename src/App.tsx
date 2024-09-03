@@ -68,8 +68,22 @@ function App() {
       }
 
       if (activeChar === 0) {
+        let find: boolean = false;
+
+        for (let i = 0; i < renderableWords[activeWord - 1].length; i++) {
+          if (
+            charClasses[`${activeWord - 1}-${i}`] === "text-white" ||
+            charClasses[`${activeWord - 1}-${i}`] === undefined
+          ) {
+            setActiveChar(i);
+            find = true;
+            break;
+          }
+        }
+
         setActiveWord(activeWord - 1);
-        setActiveChar(renderableWords[activeWord - 1].length);
+
+        if (!find) setActiveChar(renderableWords[activeWord - 1].length);
         return;
       } else setCounter(counter - 1);
 
