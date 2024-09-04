@@ -28,15 +28,24 @@ function App() {
     ref.current?.focus();
   }, []);
 
+  /**
+   * Adds more characters when typing after reaching the final length of the current word.
+   *
+   * Updates the `renderableWords` array by appending the typed character to the current word
+   * if the user has typed to the end of the word. Additionally, it updates the `charClasses`
+   * object to apply a "text-red-500" class to the newly added character.
+   *
+   * @param {string} key - The character typed by the user.
+   */
   const handleAddMoreChars = (key: string) => {
     const currentWord = renderableWords[activeWord];
 
     if (currentWord.length === activeChar) {
-      setRenderableWords((prev) => {
-        const newWords = [...prev];
-        newWords[activeWord] = currentWord + key;
-        return newWords;
-      });
+      setRenderableWords((prev) =>
+        prev.map((word, index) =>
+          index === activeWord ? currentWord + key : word
+        )
+      );
     }
 
     setCharClasses((prev) => {
@@ -47,51 +56,69 @@ function App() {
     });
   };
 
+  /**
+   * Handles the backspace key press.
+   *
+   * Removes the last character from the current word and updates the `charClasses` object to change
+   * the style of the character to "text-white". If the `currentWord` has more characters than the original
+   * word (as displayed on the screen), it will remove the extra characters until the word matches
+   * the original length again. Additionally, it manages navigation between words when deleting
+   * the first character of the current word.
+   */
   const handleBackspace = () => {
-    if (counter > 0) {
-      const currentWord = renderableWords[activeWord];
-      setCharClasses((prev) => {
-        const newClasses = { ...prev };
-        const elementKey = `${activeWord}-${activeChar - 1}`;
-        newClasses[elementKey] = "text-white";
-        return newClasses;
-      });
+    if (counter === 0) return;
 
-      if (
-        currentWord.length === activeChar &&
-        originalActiveWord.length < activeChar
-      ) {
-        setRenderableWords((prev) => {
-          const newWords = [...prev];
-          newWords[activeWord] = currentWord.slice(0, -1);
-          return newWords;
-        });
+    const currentWord = renderableWords[activeWord];
+    setCharClasses((prev) => {
+      const newClasses = { ...prev };
+      const elementKey = `${activeWord}-${activeChar - 1}`;
+      newClasses[elementKey] = "text-white";
+      return newClasses;
+    });
+
+    if (
+      currentWord.length === activeChar &&
+      originalActiveWord.length < activeChar
+    ) {
+      setRenderableWords((prev) =>
+        prev.map((word, index) =>
+          index === activeWord ? currentWord.slice(0, -1) : word
+        )
+      );
+    }
+
+    if (activeChar === 0) {
+      let find: boolean = false;
+
+      for (let i = 0; i < renderableWords[activeWord - 1].length; i++) {
+        if (
+          charClasses[`${activeWord - 1}-${i}`] === "text-white" ||
+          charClasses[`${activeWord - 1}-${i}`] === undefined
+        ) {
+          setActiveChar(i);
+          find = true;
+          break;
+        }
       }
 
-      if (activeChar === 0) {
-        let find: boolean = false;
+      setActiveWord(activeWord - 1);
 
-        for (let i = 0; i < renderableWords[activeWord - 1].length; i++) {
-          if (
-            charClasses[`${activeWord - 1}-${i}`] === "text-white" ||
-            charClasses[`${activeWord - 1}-${i}`] === undefined
-          ) {
-            setActiveChar(i);
-            find = true;
-            break;
-          }
-        }
+      if (!find) setActiveChar(renderableWords[activeWord - 1].length);
+      return;
+    } else setCounter(counter - 1);
 
-        setActiveWord(activeWord - 1);
-
-        if (!find) setActiveChar(renderableWords[activeWord - 1].length);
-        return;
-      } else setCounter(counter - 1);
-
-      setActiveChar(activeChar - 1);
-    }
+    setActiveChar(activeChar - 1);
   };
 
+  /**
+   * Handles the space key press.
+   *
+   * Verifies if the current word contains an invalid class (such as "text-red-500", `undefined`, or "text-white").
+   * If it finds any invalid class, it updates the `wordClasses` array for the current word to `false`, indicating
+   * an error, which will trigger a red border below the word. If no invalid class is found, it updates the
+   * `wordClasses` array to `true`, indicating the word is correct. The function then resets `activeChar`
+   * to 0 and advances to the next word by incrementing `activeWord`.
+   */
   const handleSpace = () => {
     if (activeChar === 0) return;
 
@@ -112,6 +139,18 @@ function App() {
     setWordClasses(currentWordClasses);
   };
 
+  /**
+   * Handles key press events.
+   *
+   * Ignores specific keys based on `keysToIgnore`. If the space bar is pressed, it triggers the `handleSpace`
+   * function. If the backspace key is pressed, it triggers the `handleBackspace` function. For other keys,
+   * it calls `handleAddMoreChars` to add the character to the current word. The function then checks if the
+   * typed character matches the expected character in the word, updating the `charClasses` object to reflect
+   * whether the character is correct ("text-green-500") or incorrect ("text-red-500"). Finally, it increments
+   * the `counter` and advances the `activeChar` to the next position.
+   *
+   * @param {string} key - The key that was pressed by the user.
+   */
   const onKeyDown = (key: string) => {
     if (keysToIgnore.includes(key)) return;
 
