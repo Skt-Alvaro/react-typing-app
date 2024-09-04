@@ -3,6 +3,7 @@ import { invalidClasses, keysToIgnore, words } from "../utils/constants";
 
 const TypingArea = () => {
   const [counter, setCounter] = React.useState<number>(0);
+  const [allWordsLength, setAllWordsLength] = React.useState<number>(0);
   const [renderableWords, setRenderableWords] = React.useState<string[]>([
     ...words,
   ]);
@@ -10,8 +11,6 @@ const TypingArea = () => {
     [key: string]: string;
   }>({});
   const [wordClasses, setWordClasses] = React.useState<boolean[]>([]);
-  const [originalActiveWord, setOriginalActiveWord] =
-    React.useState<string>("");
   const [activeWord, setActiveWord] = React.useState<number>(0);
   const [activeChar, setActiveChar] = React.useState<number>(0);
   const ref = React.useRef<HTMLDivElement>(null);
@@ -23,8 +22,14 @@ const TypingArea = () => {
   }, []);
 
   React.useEffect(() => {
-    setOriginalActiveWord(words[activeWord]);
-  }, [activeWord]);
+    let n = 0;
+
+    words.map((word) => {
+      n += word.length;
+    });
+
+    setAllWordsLength(n);
+  }, []);
 
   /**
    * Adds more characters when typing after reaching the final length of the current word.
@@ -76,7 +81,7 @@ const TypingArea = () => {
 
     if (
       currentWord.length === activeChar &&
-      originalActiveWord.length < activeChar
+      words[activeWord].length < activeChar
     ) {
       setRenderableWords((prev) =>
         prev.map((word, index) =>
@@ -139,6 +144,36 @@ const TypingArea = () => {
   };
 
   /**
+   * Checks if all words and their characters are correct by verifying their associated classes.
+   *
+   * The function iterates through all the words and characters, checking if their associated class
+   * in `charClasses` is "text-green-500". If it finds any character that doesn't have this class,
+   * it returns `false`, unless it is the last character of the last word, in which case it checks
+   * if the last element's text color matches the provided `lastElementTextColor` parameter.
+   * The `lastElementTextColor` is because the `charClasses` state is not updated with the last character.
+   *
+   * @param {string} lastElementTextColor - The expected class of the last character in the last word.
+   * @returns {boolean} - Returns `true` if all characters are correct; otherwise, returns `false`.
+   */
+  const checkIfWordsAreCorrect = (lastElementTextColor: string) => {
+    for (let wordIndex = 0; wordIndex < renderableWords.length; wordIndex++) {
+      const word = renderableWords[wordIndex];
+      for (let charIndex = 0; charIndex < word.length; charIndex++) {
+        const charClass = charClasses[`${wordIndex}-${charIndex}`];
+        if (charClass !== "text-green-500") {
+          if (
+            wordIndex === words.length - 1 &&
+            charIndex === words[wordIndex].length - 1
+          ) {
+            return lastElementTextColor === "text-green-500";
+          } else return false; // Finds a class that is not "text-green-500"
+        }
+      }
+    }
+    return true; // All classes are text-green-500
+  };
+
+  /**
    * Handles key press events.
    *
    * Ignores specific keys based on `keysToIgnore`. If the space bar is pressed, it triggers the `handleSpace`
@@ -147,6 +182,8 @@ const TypingArea = () => {
    * typed character matches the expected character in the word, updating the `charClasses` object to reflect
    * whether the character is correct ("text-green-500") or incorrect ("text-red-500"). Finally, it increments
    * the `counter` and advances the `activeChar` to the next position.
+   * If the user has typed all the words, it triggers the `checkIfWordsAreCorrect` function.
+   * To know if he typed all correctly, or failed, and end the game.
    *
    * @param {string} key - The key that was pressed by the user.
    */
@@ -169,7 +206,7 @@ const TypingArea = () => {
       `${activeWord}-${activeChar}`
     ) as HTMLDivElement;
 
-    if (element)
+    if (element) {
       setCharClasses((prev) => {
         const newClasses = { ...prev };
         const elementKey = `${activeWord}-${activeChar}`;
@@ -180,6 +217,17 @@ const TypingArea = () => {
         }
         return newClasses;
       });
+    }
+
+    if (counter === allWordsLength - 1) {
+      const lastElementTextColor =
+        key === element.textContent ? "text-green-500" : "text-red-500";
+
+      if (checkIfWordsAreCorrect(lastElementTextColor)) {
+        alert("Congrats!");
+        return;
+      } else alert("Failed");
+    }
 
     setCounter(counter + 1);
     setActiveChar(activeChar + 1);
