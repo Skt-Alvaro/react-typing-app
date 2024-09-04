@@ -1,5 +1,7 @@
 export const words = ["hola", "almeja", "bandido", "camion"];
 
+export const invalidClasses = ["text-white", undefined, "text-red-500"];
+
 export const keysToIgnore = [
   "Shift",
   "Control",

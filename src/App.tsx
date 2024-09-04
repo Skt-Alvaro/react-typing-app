@@ -1,7 +1,7 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import { keysToIgnore, words } from "./utils/constants";
+import { invalidClasses, keysToIgnore, words } from "./utils/constants";
 
 function App() {
   const [counter, setCounter] = React.useState<number>(0);
@@ -11,6 +11,7 @@ function App() {
   const [charClasses, setCharClasses] = React.useState<{
     [key: string]: string;
   }>({});
+  const [wordClasses, setWordClasses] = React.useState<boolean[]>([]);
   const [originalActiveWord, setOriginalActiveWord] =
     React.useState<string>("");
   const [activeWord, setActiveWord] = React.useState<number>(0);
@@ -92,10 +93,23 @@ function App() {
   };
 
   const handleSpace = () => {
-    if (activeChar > 0) {
-      setActiveChar(0);
-      setActiveWord(activeWord + 1);
+    if (activeChar === 0) return;
+
+    const currentWordClasses = [...wordClasses];
+    const wordLength = renderableWords[activeWord].length;
+    const hasInvalidClass = Array.from({ length: wordLength }).some((_, i) =>
+      invalidClasses.includes(charClasses[`${activeWord}-${i}`])
+    );
+
+    if (hasInvalidClass) {
+      currentWordClasses[activeWord] = false;
+    } else {
+      currentWordClasses[activeWord] = currentWordClasses[activeWord] || true;
     }
+
+    setActiveChar(0);
+    setActiveWord(activeWord + 1);
+    setWordClasses(currentWordClasses);
   };
 
   const onKeyDown = (key: string) => {
@@ -151,7 +165,13 @@ function App() {
           {renderableWords.map((word, i) => (
             <div
               key={word}
-              className={`text-4xl m-2 ${activeWord === i ? "border-b" : ""}`}
+              className={`text-4xl m-2 ${
+                activeWord === i
+                  ? "border-b"
+                  : wordClasses[i] === false
+                  ? "border-b border-red-500"
+                  : ""
+              }`}
             >
               {word.split("").map((char, index) => (
                 <span
