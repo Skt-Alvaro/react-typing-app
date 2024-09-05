@@ -32,3 +32,23 @@ export const keysToIgnore = [
   "F11",
   "F12", // Function keys
 ];
+
+export const themes = [
+  { label: "Light", value: "light" },
+  {
+    label: "Dark",
+    value: "dark",
+  },
+  {
+    label: "Purple",
+    value: "purple",
+  },
+  {
+    label: "Vanilla",
+    value: "vanilla",
+  },
+  {
+    label: "Silent Hill",
+    value: "lugubrious",
+  },
+];
