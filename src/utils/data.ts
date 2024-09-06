@@ -52,3 +52,5 @@ export const themes = [
     value: "lugubrious",
   },
 ];
+
+export const wordsNumber = [5, 10, 20, 50, 100]

@@ -30,6 +30,7 @@ code {
   --color-secondary: hsl(0, 0%, 50%);
   --color-success: hsl(0, 0%, 0%);
   --color-error: hsl(0, 100%, 50%);
+  --color-footer: hsl(0, 0%, 70%);
 }
 
 .theme-dark {
@@ -37,6 +38,7 @@ code {
   --color-secondary: hsl(0, 0%, 50%);
   --color-success: hsl(0, 0%, 100%);
   --color-error: hsl(0, 100%, 50%);
+  --color-footer: hsl(0, 1%, 30%);
 }
 
 /* .theme-orange {
@@ -46,7 +48,10 @@ code {
 
 .theme-purple {
   --color-primary: hsl(270, 100%, 50%);
-  --color-secondary: #fffacd;
+  --color-secondary: #fffacc;
+  --color-success: #d9d907;
+  --color-error: hsl(0, 100%, 50%);
+  --color-footer: hsl(270, 100%, 20%);
 }
 
 .theme-green {
@@ -60,10 +65,11 @@ code {
 }
 
 .theme-vanilla {
-  --color-primary: #f4ff91;
+  --color-primary: hsl(66, 100%, 78%);
   --color-secondary: #34495e;
   --color-success: #00008b;
   --color-error: hsl(0, 100%, 50%);
+  --color-footer: hsl(66, 44%, 60%);
 }
 
 .theme-lugubrious {
@@ -71,4 +77,5 @@ code {
   --color-secondary: hsl(0, 0%, 50%);
   --color-success: hsl(0, 0%, 35%);
   --color-error: hsl(0, 100%, 50%);
+  --color-footer: hsl(0, 0%, 40%);
 }

@@ -14,7 +14,7 @@ const ThemeContext = React.createContext({} as ThemeContextProps);
 export const useTheme = () => React.useContext(ThemeContext);
 
 const ThemeProvider = (props: Props) => {
-  const [theme, setTheme] = React.useState<string>("light");
+  const [theme, setTheme] = React.useState<string>("lugubrious");
 
   const toggleTheme = React.useCallback((newTheme: string) => {
     setTheme(newTheme);

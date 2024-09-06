@@ -8,6 +8,7 @@ module.exports = {
         secondary: "var(--color-secondary)",
         success: "var(--color-success)",
         error: "var(--color-error)",
+        footer: "var(--color-footer)",
       },
     },
   },

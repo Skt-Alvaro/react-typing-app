@@ -254,7 +254,9 @@ const TypingArea = () => {
             {word.split("").map((char, index) => (
               <span
                 id={`${i}-${index}`}
-                className={charClasses[`${i}-${index}`] || ""}
+                className={`transition-colors ${
+                  charClasses[`${i}-${index}`] || ""
+                }`}
               >
                 {char}
               </span>
