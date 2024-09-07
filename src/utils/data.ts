@@ -53,4 +53,6 @@ export const themes = [
   },
 ];
 
-export const wordsNumber = [5, 10, 20, 50, 100]
+export const wordsNumber = [5, 10, 20, 50, 100];
+
+export const gameModes = ["Words", "Time"];

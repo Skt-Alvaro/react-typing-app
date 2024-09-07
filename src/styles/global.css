@@ -30,7 +30,9 @@ code {
   --color-secondary: hsl(0, 0%, 50%);
   --color-success: hsl(0, 0%, 0%);
   --color-error: hsl(0, 100%, 50%);
-  --color-footer: hsl(0, 0%, 70%);
+  --color-footer: rgb(179, 179, 179, 0.55);
+  --color-footer-text: hsl(0, 0%, 50%);
+  --color-footer-text-hover: hsl(0, 0%, 30%);
 }
 
 .theme-dark {
@@ -38,20 +40,24 @@ code {
   --color-secondary: hsl(0, 0%, 50%);
   --color-success: hsl(0, 0%, 100%);
   --color-error: hsl(0, 100%, 50%);
-  --color-footer: hsl(0, 1%, 30%);
+  --color-footer: rgb(77, 76, 76, 0.55);
+  --color-footer-text: hsl(0, 0%, 50%);
+  --color-footer-text-hover: hsl(0, 0%, 80%);
 }
 
 /* .theme-orange {
   --color-primary: hsl(25, 95%, 53%);
   --color-secondary: hsl(25, 95%, 65%);
-} */
+  } */
 
 .theme-purple {
   --color-primary: hsl(270, 100%, 50%);
   --color-secondary: #fffacc;
   --color-success: #d9d907;
   --color-error: hsl(0, 100%, 50%);
-  --color-footer: hsl(270, 100%, 20%);
+  --color-footer: rgb(51, 0, 102, 0.55);
+  --color-footer-text: hsl(54, 100%, 90%);
+  --color-footer-text-hover: hsl(54, 73%, 70%);
 }
 
 .theme-green {
@@ -69,7 +75,9 @@ code {
   --color-secondary: #34495e;
   --color-success: #00008b;
   --color-error: hsl(0, 100%, 50%);
-  --color-footer: hsl(66, 44%, 60%);
+  --color-footer: rgb(189, 198, 108, 0.55);
+  --color-footer-text: #34495e;
+  --color-footer-text-hover: #2c5b88;
 }
 
 .theme-lugubrious {
@@ -77,5 +85,7 @@ code {
   --color-secondary: hsl(0, 0%, 50%);
   --color-success: hsl(0, 0%, 35%);
   --color-error: hsl(0, 100%, 50%);
-  --color-footer: hsl(0, 0%, 40%);
+  --color-footer: rgb(102, 102, 102, 0.55);
+  --color-footer-text: #ffffff;
+  --color-footer-text-hover: #f5d2d2;
 }

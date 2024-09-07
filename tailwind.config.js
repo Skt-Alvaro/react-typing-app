@@ -9,6 +9,8 @@ module.exports = {
         success: "var(--color-success)",
         error: "var(--color-error)",
         footer: "var(--color-footer)",
+        "footer-text": "var(--color-footer-text)",
+        "footer-text-hover": "var(--color-footer-text-hover)",
       },
     },
   },

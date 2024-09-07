@@ -1,19 +1,20 @@
 import React from "react";
-import { invalidClasses, keysToIgnore, words } from "../utils/data";
+import { invalidClasses, keysToIgnore } from "../utils/data";
 import { useTheme } from "../context/theme";
+import { useConfig } from "../context/config";
 
 const TypingArea = () => {
+  const { words } = useConfig();
+  const [renderableWords, setRenderableWords] = React.useState<string[]>(words);
   const [counter, setCounter] = React.useState<number>(0);
   const [allWordsLength, setAllWordsLength] = React.useState<number>(0);
-  const [renderableWords, setRenderableWords] = React.useState<string[]>([
-    ...words,
-  ]);
   const [charClasses, setCharClasses] = React.useState<{
     [key: string]: string;
   }>({});
   const [wordClasses, setWordClasses] = React.useState<boolean[]>([]);
   const [activeWord, setActiveWord] = React.useState<number>(0);
   const [activeChar, setActiveChar] = React.useState<number>(0);
+  const [visible, setVisible] = React.useState<boolean>(false);
   const ref = React.useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
 
@@ -24,12 +25,20 @@ const TypingArea = () => {
   }, [theme]);
 
   React.useEffect(() => {
+    if (words.length === 0) return;
+    if (!ref.current) return;
+
     let n = 0;
-
     words.forEach((word) => (n += word.length));
-
     setAllWordsLength(n);
-  }, []);
+
+    setVisible(false);
+    setTimeout(() => {
+      setRenderableWords(words);
+      setVisible(true);
+    }, 200);
+    ref.current?.focus();
+  }, [words]);
 
   /**
    * Adds more characters when typing after reaching the final length of the current word.
@@ -236,33 +245,37 @@ const TypingArea = () => {
     <div className="flex justify-center items-center h-screen">
       <div
         ref={ref}
-        className="flex flex-wrap px-20 focus:outline-none"
+        className={`flex flex-wrap focus:outline-none w-[90%] transition-opacity duration-300 ${
+          visible ? "opacity-100" : "opacity-0"
+        }`}
         onKeyDown={(e) => onKeyDown(e.key)}
         tabIndex={0}
       >
-        {renderableWords.map((word, i) => (
-          <div
-            key={word}
-            className={`text-4xl m-2 ${
-              activeWord === i
-                ? "border-b"
-                : wordClasses[i] === false
-                ? "border-b border-error"
-                : ""
-            }`}
-          >
-            {word.split("").map((char, index) => (
-              <span
-                id={`${i}-${index}`}
-                className={`transition-colors ${
-                  charClasses[`${i}-${index}`] || ""
+        {visible
+          ? renderableWords.map((word, i) => (
+              <div
+                key={word}
+                className={`text-4xl m-2 ${
+                  activeWord === i
+                    ? "border-b"
+                    : wordClasses[i] === false
+                    ? "border-b border-error"
+                    : ""
                 }`}
               >
-                {char}
-              </span>
-            ))}
-          </div>
-        ))}
+                {word.split("").map((char, index) => (
+                  <span
+                    id={`${i}-${index}`}
+                    className={`transition-colors duration-100 ${
+                      charClasses[`${i}-${index}`] || ""
+                    }`}
+                  >
+                    {char}
+                  </span>
+                ))}
+              </div>
+            ))
+          : null}
       </div>
     </div>
   );
