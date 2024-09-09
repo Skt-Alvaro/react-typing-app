@@ -2,6 +2,7 @@ import React from "react";
 import { invalidClasses, keysToIgnore } from "../utils/data";
 import { useTheme } from "../context/theme";
 import { useConfig } from "../context/config";
+import { BACKSPACE, SPACE } from "../utils/constants";
 
 const TypingArea = () => {
   const { words } = useConfig();
@@ -15,6 +16,10 @@ const TypingArea = () => {
   const [activeWord, setActiveWord] = React.useState<number>(0);
   const [activeChar, setActiveChar] = React.useState<number>(0);
   const [visible, setVisible] = React.useState<boolean>(false);
+  const [currentParagraphLine, setCurrentParagraphLine] =
+    React.useState<number>(1);
+  const [scrollValue, setScrollValue] = React.useState<number>(0);
+  const [lastAction, setLastAction] = React.useState<string>("");
   const ref = React.useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
 
@@ -39,6 +44,51 @@ const TypingArea = () => {
     }, 200);
     ref.current?.focus();
   }, [words]);
+
+  /**
+   * This effect is checking when its time to make the scroll to show the new words or scrolling back to top on doing backspace.
+   *
+   * If the user reach the last word of the second line or subsequent lines, it scrolls to the next line. If the user is doing backspace, it will scroll back to the previous line.
+   */
+  React.useEffect(() => {
+    const isSpace = lastAction === SPACE;
+
+    const prevWordY = document
+      .getElementById((activeWord - 1).toString())
+      ?.getBoundingClientRect().y;
+
+    const currentWordY = document
+      .getElementById(activeWord.toString())
+      ?.getBoundingClientRect().y;
+
+    const nextWordY = document
+      .getElementById((activeWord + 1).toString())
+      ?.getBoundingClientRect().y;
+
+    if (!currentWordY || !prevWordY || !nextWordY) return;
+
+    const shouldScroll = isSpace
+      ? currentWordY > prevWordY
+      : currentWordY < nextWordY;
+
+    if (shouldScroll) {
+      setCurrentParagraphLine(
+        isSpace ? currentParagraphLine + 1 : currentParagraphLine - 1
+      );
+
+      const newScrollValue = isSpace ? scrollValue + 57 : scrollValue - 57;
+
+      if (currentParagraphLine + 1 > 2) {
+        if (!ref.current) return;
+
+        ref.current.scrollTo({
+          top: isSpace ? scrollValue + 57 : scrollValue - 57,
+          behavior: "smooth",
+        });
+        setScrollValue(newScrollValue);
+      }
+    }
+  }, [activeWord]);
 
   /**
    * Adds more characters when typing after reaching the final length of the current word.
@@ -79,6 +129,7 @@ const TypingArea = () => {
    */
   const handleBackspace = () => {
     if (counter === 0) return;
+    setLastAction(BACKSPACE);
 
     const currentWord = renderableWords[activeWord];
     setCharClasses((prev) => {
@@ -135,6 +186,7 @@ const TypingArea = () => {
     if (activeChar === 0 || renderableWords[activeWord + 1] === undefined)
       return;
 
+    setLastAction(SPACE);
     const currentWordClasses = [...wordClasses];
     const wordLength = renderableWords[activeWord].length;
     const hasInvalidClass = Array.from({ length: wordLength }).some((_, i) =>
@@ -199,12 +251,12 @@ const TypingArea = () => {
   const onKeyDown = (key: string) => {
     if (keysToIgnore.includes(key)) return;
 
-    if (key === " ") {
+    if (key === SPACE) {
       handleSpace();
       return;
     }
 
-    if (key === "Backspace") {
+    if (key === BACKSPACE) {
       handleBackspace();
       return;
     }
@@ -245,7 +297,7 @@ const TypingArea = () => {
     <div className="flex justify-center items-center h-screen">
       <div
         ref={ref}
-        className={`flex flex-wrap focus:outline-none w-[90%] transition-opacity duration-300 ${
+        className={`flex flex-wrap focus:outline-none w-[90%] max-h-[170px] overflow-hidden transition-opacity duration-300 ${
           visible ? "opacity-100" : "opacity-0"
         }`}
         onKeyDown={(e) => onKeyDown(e.key)}
@@ -255,6 +307,7 @@ const TypingArea = () => {
           ? renderableWords.map((word, i) => (
               <div
                 key={word}
+                id={i.toString()}
                 className={`text-4xl m-2 ${
                   activeWord === i
                     ? "border-b"
