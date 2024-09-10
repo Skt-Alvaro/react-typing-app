@@ -310,7 +310,7 @@ const TypingArea = () => {
                 id={i.toString()}
                 className={`text-4xl m-2 ${
                   activeWord === i
-                    ? "border-b"
+                    ? "border-b-2 border-secondary"
                     : wordClasses[i] === false
                     ? "border-b border-error"
                     : ""
