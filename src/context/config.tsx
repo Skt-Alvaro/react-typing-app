@@ -11,6 +11,8 @@ interface ConfigContextProps {
   setWords: React.Dispatch<React.SetStateAction<string[]>>;
   wordsNumber: number;
   setWordsNumber: React.Dispatch<React.SetStateAction<number>>;
+  isTyping: boolean;
+  setIsTyping: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface Props {
@@ -26,6 +28,7 @@ const ConfigProvider = (props: Props) => {
   const [time, setTime] = React.useState<number>(0);
   const [words, setWords] = React.useState<string[]>([]);
   const [wordsNumber, setWordsNumber] = React.useState<number>(25);
+  const [isTyping, setIsTyping] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     const generatedWords = generate(wordsNumber) as string[];
@@ -42,8 +45,10 @@ const ConfigProvider = (props: Props) => {
       setWords,
       wordsNumber,
       setWordsNumber,
+      isTyping,
+      setIsTyping,
     }),
-    [mode, time, wordsNumber, words]
+    [mode, time, wordsNumber, words, isTyping]
   );
 
   return (

@@ -15,11 +15,15 @@ import Modal from "./utils/modal";
 const Footer = () => {
   const [visible, setVisible] = React.useState<boolean>(false);
   const { theme, toggleTheme } = useTheme();
-  const { wordsNumber, setWordsNumber, mode, setMode } = useConfig();
+  const { wordsNumber, setWordsNumber, mode, setMode, isTyping } = useConfig();
 
   return (
     <>
-      <div className="absolute bottom-5 left-0 right-0 text-center mx-auto px-3 w-[95%] rounded-lg flex bg-footer text-footer-text shadow py-1 gap-x-3">
+      <div
+        className={`absolute bottom-5 left-0 right-0 text-center mx-auto px-3 w-[95%] rounded-lg flex bg-footer text-footer-text shadow py-1 gap-x-3 transition-opacity ${
+          isTyping ? "opacity-0 duration-100" : "opacity-100 duration-300"
+        }`}
+      >
         <select
           value={theme}
           className="px-2 py-1 rounded-lg bg-transparent hover:text-footer-text-hover cursor-pointer"

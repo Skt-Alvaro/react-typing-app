@@ -5,7 +5,7 @@ import { useConfig } from "../context/config";
 import { BACKSPACE, SPACE } from "../utils/constants";
 
 const TypingArea = () => {
-  const { words } = useConfig();
+  const { words, wordsNumber, setIsTyping } = useConfig();
   const [renderableWords, setRenderableWords] = React.useState<string[]>(words);
   const [counter, setCounter] = React.useState<number>(0);
   const [allWordsLength, setAllWordsLength] = React.useState<number>(0);
@@ -30,6 +30,16 @@ const TypingArea = () => {
   }, [theme]);
 
   React.useEffect(() => {
+    setCounter(0);
+    setActiveWord(0);
+    setActiveChar(0);
+    setWordClasses([]);
+    setCharClasses({});
+    setLastAction("");
+    setIsTyping(false);
+  }, [wordsNumber]);
+
+  React.useEffect(() => {
     if (words.length === 0) return;
     if (!ref.current) return;
 
@@ -48,7 +58,8 @@ const TypingArea = () => {
   /**
    * This effect is checking when its time to make the scroll to show the new words or scrolling back to top on doing backspace.
    *
-   * If the user reach the last word of the second line or subsequent lines, it scrolls to the next line. If the user is doing backspace, it will scroll back to the previous line.
+   * If the user reach the last word of the second line or subsequent lines, it scrolls to the next line.
+   * If the user is doing backspace, it will scroll back to the previous line.
    */
   React.useEffect(() => {
     const isSpace = lastAction === SPACE;
@@ -89,6 +100,29 @@ const TypingArea = () => {
       }
     }
   }, [activeWord]);
+
+  /**
+   * This effect is checking when user start and stop typing.
+   *
+   * If the user is typing and stops typing after 3 seconds, it will set `isTyping` to `false`.
+   * Showing the footer again.
+   */
+  React.useEffect(() => {
+    if (counter > 0) {
+      setIsTyping(true);
+      let n = 1;
+
+      const timer = setInterval(() => {
+        n++;
+        if (n === 3) {
+          clearInterval(timer);
+          setIsTyping(false);
+        }
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [counter]);
 
   /**
    * Adds more characters when typing after reaching the final length of the current word.
