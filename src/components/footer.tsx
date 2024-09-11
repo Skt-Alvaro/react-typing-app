@@ -21,7 +21,7 @@ const Footer = () => {
     <>
       <div
         className={`absolute bottom-5 left-0 right-0 text-center mx-auto px-3 w-[95%] rounded-lg flex bg-footer text-footer-text shadow py-1 gap-x-3 transition-opacity ${
-          isTyping ? "opacity-0 duration-100" : "opacity-100 duration-300"
+          isTyping ? "opacity-0 duration-150" : "opacity-100 duration-300"
         }`}
       >
         <select
