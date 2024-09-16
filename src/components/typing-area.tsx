@@ -1,8 +1,10 @@
 import React from "react";
+import CompletedBar from "./utils/complete/completed-bar";
 import { invalidClasses, keysToIgnore } from "../utils/data";
 import { useTheme } from "../context/theme";
 import { useConfig } from "../context/config";
 import { BACKSPACE, SPACE } from "../utils/constants";
+import { WordsHistoryEnum } from "../utils/enum";
 
 const TypingArea = () => {
   const { words, wordsNumber, setIsTyping } = useConfig();
@@ -20,15 +22,21 @@ const TypingArea = () => {
     React.useState<number>(1);
   const [scrollValue, setScrollValue] = React.useState<number>(0);
   const [lastAction, setLastAction] = React.useState<string>("");
+  const [completed, setCompleted] = React.useState<boolean>(false);
+  const [wordsHistory, setWordsHistory] = React.useState<number[]>([
+    0, 0, 0, 0,
+  ]);
   const ref = React.useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
-
   React.useEffect(() => {
     if (!ref.current) return;
 
     ref.current?.focus();
   }, [theme]);
 
+  /**
+   * This effect is called when words change, so this restart all the states.
+   */
   React.useEffect(() => {
     setCounter(0);
     setActiveWord(0);
@@ -37,7 +45,7 @@ const TypingArea = () => {
     setCharClasses({});
     setLastAction("");
     setIsTyping(false);
-  }, [wordsNumber]);
+  }, [words]);
 
   React.useEffect(() => {
     if (words.length === 0) return;
@@ -108,7 +116,10 @@ const TypingArea = () => {
    * Showing the footer again.
    */
   React.useEffect(() => {
-    if (counter > 0) {
+    if (
+      counter > 0 &&
+      !charClasses[`${wordsNumber - 1}-${words[wordsNumber - 1].length - 2}`]
+    ) {
       setIsTyping(true);
       let n = 1;
 
@@ -142,6 +153,12 @@ const TypingArea = () => {
           index === activeWord ? currentWord + key : word
         )
       );
+
+      setWordsHistory((prev) => {
+        const newWordsHistory = [...prev];
+        newWordsHistory[WordsHistoryEnum.EXTRA] += 1;
+        return newWordsHistory;
+      });
     }
 
     setCharClasses((prev) => {
@@ -164,6 +181,12 @@ const TypingArea = () => {
   const handleBackspace = () => {
     if (counter === 0) return;
     setLastAction(BACKSPACE);
+
+    setWordsHistory((prev) => {
+      const newWordsHistory = [...prev];
+      newWordsHistory.pop();
+      return newWordsHistory;
+    });
 
     const currentWord = renderableWords[activeWord];
     setCharClasses((prev) => {
@@ -239,36 +262,6 @@ const TypingArea = () => {
   };
 
   /**
-   * Checks if all words and their characters are correct by verifying their associated classes.
-   *
-   * The function iterates through all the words and characters, checking if their associated class
-   * in `charClasses` is "text-success". If it finds any character that doesn't have this class,
-   * it returns `false`, unless it is the last character of the last word, in which case it checks
-   * if the last element's text color matches the provided `lastElementTextColor` parameter.
-   * The `lastElementTextColor` is because the `charClasses` state is not updated with the last character.
-   *
-   * @param {string} lastElementTextColor - The expected class of the last character in the last word.
-   * @returns {boolean} - Returns `true` if all characters are correct; otherwise, returns `false`.
-   */
-  const checkIfWordsAreCorrect = (lastElementTextColor: string) => {
-    for (let wordIndex = 0; wordIndex < renderableWords.length; wordIndex++) {
-      const word = renderableWords[wordIndex];
-      for (let charIndex = 0; charIndex < word.length; charIndex++) {
-        const charClass = charClasses[`${wordIndex}-${charIndex}`];
-        if (charClass !== "text-success") {
-          if (
-            wordIndex === words.length - 1 &&
-            charIndex === words[wordIndex].length - 1
-          ) {
-            return lastElementTextColor === "text-success";
-          } else return false; // Finds a class that is not "text-success"
-        }
-      }
-    }
-    return true; // All classes are text-success
-  };
-
-  /**
    * Handles key press events.
    *
    * Ignores specific keys based on `keysToIgnore`. If the space bar is pressed, it triggers the `handleSpace`
@@ -302,6 +295,14 @@ const TypingArea = () => {
     ) as HTMLDivElement;
 
     if (element) {
+      setWordsHistory((prev) => {
+        const newWordsHistory = [...prev];
+        key === element.textContent
+          ? (newWordsHistory[WordsHistoryEnum.CORRECT] += 1)
+          : (newWordsHistory[WordsHistoryEnum.INCORRECT] += 1);
+        return newWordsHistory;
+      });
+
       setCharClasses((prev) => {
         const newClasses = { ...prev };
         const elementKey = `${activeWord}-${activeChar}`;
@@ -314,13 +315,18 @@ const TypingArea = () => {
       });
     }
 
-    if (counter === allWordsLength - 1) {
-      const lastElementTextColor =
-        key === element.textContent ? "text-success" : "text-error";
-
-      if (checkIfWordsAreCorrect(lastElementTextColor)) {
-        alert("Congrats!");
-      } else alert("Failed");
+    if (
+      charClasses[`${wordsNumber - 1}-${words[wordsNumber - 1].length - 2}`]
+    ) {
+      setCompleted(true);
+      setIsTyping(false);
+      if (allWordsLength > counter)
+        setWordsHistory((prev) => {
+          const newWordsHistory = [...prev];
+          newWordsHistory[WordsHistoryEnum.MISSED] =
+            allWordsLength - counter - 1;
+          return newWordsHistory;
+        });
     }
 
     setCounter(counter + 1);
@@ -329,41 +335,45 @@ const TypingArea = () => {
 
   return (
     <div className="flex justify-center items-center h-screen">
-      <div
-        ref={ref}
-        className={`flex flex-wrap focus:outline-none w-[90%] max-h-[170px] overflow-hidden transition-opacity duration-300 ${
-          visible ? "opacity-100" : "opacity-0"
-        }`}
-        onKeyDown={(e) => onKeyDown(e.key)}
-        tabIndex={0}
-      >
-        {visible
-          ? renderableWords.map((word, i) => (
-              <div
-                key={word}
-                id={i.toString()}
-                className={`text-4xl m-2 ${
-                  activeWord === i
-                    ? "border-b-2 border-secondary"
-                    : wordClasses[i] === false
-                    ? "border-b border-error"
-                    : ""
-                }`}
-              >
-                {word.split("").map((char, index) => (
-                  <span
-                    id={`${i}-${index}`}
-                    className={`transition-colors duration-100 ${
-                      charClasses[`${i}-${index}`] || ""
-                    }`}
-                  >
-                    {char}
-                  </span>
-                ))}
-              </div>
-            ))
-          : null}
-      </div>
+      {completed ? (
+        <CompletedBar wordsHistory={wordsHistory} />
+      ) : (
+        <div
+          ref={ref}
+          className={`flex flex-wrap focus:outline-none w-[90%] max-h-[170px] overflow-hidden transition-opacity duration-300 ${
+            visible ? "opacity-100" : "opacity-0"
+          }`}
+          onKeyDown={(e) => onKeyDown(e.key)}
+          tabIndex={0}
+        >
+          {visible
+            ? renderableWords.map((word, i) => (
+                <div
+                  key={word}
+                  id={i.toString()}
+                  className={`text-4xl m-2 ${
+                    activeWord === i
+                      ? "border-b-2 border-secondary"
+                      : wordClasses[i] === false
+                      ? "border-b border-error"
+                      : ""
+                  }`}
+                >
+                  {word.split("").map((char, index) => (
+                    <span
+                      id={`${i}-${index}`}
+                      className={`transition-colors duration-100 ${
+                        charClasses[`${i}-${index}`] || ""
+                      }`}
+                    >
+                      {char}
+                    </span>
+                  ))}
+                </div>
+              ))
+            : null}
+        </div>
+      )}
     </div>
   );
 };
