@@ -27,7 +27,7 @@ const ConfigProvider = (props: Props) => {
   const [mode, setMode] = React.useState<gameModeEnum>(gameModeEnum.WORDS);
   const [time, setTime] = React.useState<number>(0);
   const [words, setWords] = React.useState<string[]>([]);
-  const [wordsNumber, setWordsNumber] = React.useState<number>(25);
+  const [wordsNumber, setWordsNumber] = React.useState<number>(2);
   const [isTyping, setIsTyping] = React.useState<boolean>(false);
 
   React.useEffect(() => {

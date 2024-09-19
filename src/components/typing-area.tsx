@@ -23,11 +23,15 @@ const TypingArea = () => {
   const [scrollValue, setScrollValue] = React.useState<number>(0);
   const [lastAction, setLastAction] = React.useState<string>("");
   const [completed, setCompleted] = React.useState<boolean>(false);
+  const [fullWordsHistory, setFullWordsHistory] = React.useState<number[]>([
+    0, 0, 0, 0,
+  ]);
   const [wordsHistory, setWordsHistory] = React.useState<number[]>([
     0, 0, 0, 0,
   ]);
   const ref = React.useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
+
   React.useEffect(() => {
     if (!ref.current) return;
 
@@ -154,10 +158,16 @@ const TypingArea = () => {
         )
       );
 
+      setFullWordsHistory((prev) => {
+        const newFullWordsHistory = [...prev];
+        newFullWordsHistory[WordsHistoryEnum.EXTRA] += 1;
+        return newFullWordsHistory;
+      });
+
       setWordsHistory((prev) => {
-        const newWordsHistory = [...prev];
-        newWordsHistory[WordsHistoryEnum.EXTRA] += 1;
-        return newWordsHistory;
+        const newCorrectIncorrectChars = [...prev];
+        newCorrectIncorrectChars[WordsHistoryEnum.EXTRA] += 1;
+        return newCorrectIncorrectChars;
       });
     }
 
@@ -182,12 +192,6 @@ const TypingArea = () => {
     if (counter === 0) return;
     setLastAction(BACKSPACE);
 
-    setWordsHistory((prev) => {
-      const newWordsHistory = [...prev];
-      newWordsHistory.pop();
-      return newWordsHistory;
-    });
-
     const currentWord = renderableWords[activeWord];
     setCharClasses((prev) => {
       const newClasses = { ...prev };
@@ -205,6 +209,22 @@ const TypingArea = () => {
           index === activeWord ? currentWord.slice(0, -1) : word
         )
       );
+
+      setWordsHistory((prev) => {
+        const newCorrectIncorrectChars = [...prev];
+        newCorrectIncorrectChars[WordsHistoryEnum.EXTRA] -= 1;
+        return newCorrectIncorrectChars;
+      });
+    } else {
+      const elementKey = `${activeWord}-${activeChar - 1}`;
+
+      setWordsHistory((prev) => {
+        const newWordsHistory = [...prev];
+        charClasses[elementKey] === "text-success"
+          ? (newWordsHistory[WordsHistoryEnum.CORRECT] -= 1)
+          : (newWordsHistory[WordsHistoryEnum.INCORRECT] -= 1);
+        return newWordsHistory;
+      });
     }
 
     if (activeChar === 0) {
@@ -295,6 +315,14 @@ const TypingArea = () => {
     ) as HTMLDivElement;
 
     if (element) {
+      setFullWordsHistory((prev) => {
+        const newFullWordsHistory = [...prev];
+        key === element.textContent
+          ? (newFullWordsHistory[WordsHistoryEnum.CORRECT] += 1)
+          : (newFullWordsHistory[WordsHistoryEnum.INCORRECT] += 1);
+        return newFullWordsHistory;
+      });
+
       setWordsHistory((prev) => {
         const newWordsHistory = [...prev];
         key === element.textContent
@@ -315,28 +343,39 @@ const TypingArea = () => {
       });
     }
 
-    if (
-      charClasses[`${wordsNumber - 1}-${words[wordsNumber - 1].length - 2}`]
-    ) {
-      setCompleted(true);
-      setIsTyping(false);
-      if (allWordsLength > counter)
-        setWordsHistory((prev) => {
-          const newWordsHistory = [...prev];
-          newWordsHistory[WordsHistoryEnum.MISSED] =
-            allWordsLength - counter - 1;
-          return newWordsHistory;
-        });
-    }
+    if (charClasses[`${wordsNumber - 1}-${words[wordsNumber - 1].length - 2}`])
+      handleComplete(key === element.textContent);
 
     setCounter(counter + 1);
     setActiveChar(activeChar + 1);
   };
 
+  const handleComplete = (isLastCharCorrect: boolean) => {
+    setCompleted(true);
+    setIsTyping(false);
+    if (allWordsLength > counter) {
+      setFullWordsHistory((prev) => {
+        const newFullWordsHistory = [...prev];
+        newFullWordsHistory[WordsHistoryEnum.MISSED] =
+          allWordsLength - counter - 1;
+        return newFullWordsHistory;
+      });
+
+      setWordsHistory((prev) => {
+        const newWordsHistory = [...prev];
+        newWordsHistory[WordsHistoryEnum.MISSED] = allWordsLength - counter - 1;
+        return newWordsHistory;
+      });
+    }
+  };
+
   return (
     <div className="flex justify-center items-center h-screen">
       {completed ? (
-        <CompletedBar wordsHistory={wordsHistory} />
+        <CompletedBar
+          fullWordsHistory={fullWordsHistory}
+          wordsHistory={wordsHistory}
+        />
       ) : (
         <div
           ref={ref}
