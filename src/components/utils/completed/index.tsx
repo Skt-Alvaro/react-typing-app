@@ -1,18 +1,19 @@
 import React from "react";
-import BarChart from "../bar-chart";
 import { WORDS_HISTORY_LABELS } from "../../../utils/constants";
 import { WordsHistoryEnum } from "../../../utils/enum";
+import CircleChart from "./circle-chart";
+import ResultsCard from "./results-card";
 
 interface Props {
   fullWordsHistory: number[];
   wordsHistory: number[];
 }
 
-const CompletedBar: React.FC<Props> = ({ fullWordsHistory, wordsHistory }) => {
+const Results: React.FC<Props> = ({ fullWordsHistory, wordsHistory }) => {
   const [accuracy, setAccuracy] = React.useState<number>(0);
   const historyFormatted = fullWordsHistory.map((w, i) => ({
     name: WORDS_HISTORY_LABELS[i],
-    uv: w,
+    value: w,
   }));
 
   React.useEffect(() => {
@@ -27,16 +28,10 @@ const CompletedBar: React.FC<Props> = ({ fullWordsHistory, wordsHistory }) => {
 
   return (
     <>
-      <BarChart data={historyFormatted} />
-      <div>
-        {JSON.stringify(fullWordsHistory)}
-        <p>acc</p>
-        <h3>{accuracy}%</h3>
-        <h1>El oooooootrooooo</h1>
-        {JSON.stringify(wordsHistory)}
-      </div>
+      <CircleChart data={historyFormatted} />
+      <ResultsCard data={2} />
     </>
   );
 };
 
-export default CompletedBar;
+export default Results;

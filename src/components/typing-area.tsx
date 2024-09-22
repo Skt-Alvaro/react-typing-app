@@ -1,5 +1,5 @@
 import React from "react";
-import CompletedBar from "./utils/complete/completed-bar";
+import Results from "./utils/completed";
 import { invalidClasses, keysToIgnore } from "../utils/data";
 import { useTheme } from "../context/theme";
 import { useConfig } from "../context/config";
@@ -372,7 +372,7 @@ const TypingArea = () => {
   return (
     <div className="flex justify-center items-center h-screen">
       {completed ? (
-        <CompletedBar
+        <Results
           fullWordsHistory={fullWordsHistory}
           wordsHistory={wordsHistory}
         />
