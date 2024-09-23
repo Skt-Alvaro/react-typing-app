@@ -24,8 +24,6 @@ const CircleChart: React.FC<Props> = ({ data }) => {
         <Tooltip />
         <Pie
           data={historyFormatted}
-          // cx={120}
-          // cy={200}
           innerRadius={60}
           outerRadius={80}
           paddingAngle={zero_counters === 1 ? 0 : 5}
