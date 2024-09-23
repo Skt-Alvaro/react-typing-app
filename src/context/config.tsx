@@ -10,9 +10,9 @@ interface ConfigContextProps {
   words: string[];
   setWords: React.Dispatch<React.SetStateAction<string[]>>;
   wordsNumber: number;
-  setWordsNumber: React.Dispatch<React.SetStateAction<number>>;
   isTyping: boolean;
   setIsTyping: React.Dispatch<React.SetStateAction<boolean>>;
+  handleGenerateWords: (wordsNumber: number) => void;
 }
 
 interface Props {
@@ -31,9 +31,20 @@ const ConfigProvider = (props: Props) => {
   const [isTyping, setIsTyping] = React.useState<boolean>(false);
 
   React.useEffect(() => {
-    const generatedWords = generate(wordsNumber) as string[];
+    const savedWordsNumber = localStorage.getItem("wordsNumber");
+    if (savedWordsNumber) setWordsNumber(Number(savedWordsNumber));
+    const generatedWords = generate(
+      savedWordsNumber ? Number(savedWordsNumber) : wordsNumber
+    ) as string[];
     setWords(generatedWords);
-  }, [wordsNumber]);
+  }, []);
+
+  const handleGenerateWords = (wordsNumber: number) => {
+    const generatedWords = generate(wordsNumber) as string[];
+    setWordsNumber(wordsNumber);
+    setWords(generatedWords);
+    localStorage.setItem("wordsNumber", String(wordsNumber));
+  };
 
   const configProviderValue = React.useMemo(
     () => ({
@@ -44,9 +55,9 @@ const ConfigProvider = (props: Props) => {
       words,
       setWords,
       wordsNumber,
-      setWordsNumber,
       isTyping,
       setIsTyping,
+      handleGenerateWords,
     }),
     [mode, time, wordsNumber, words, isTyping]
   );

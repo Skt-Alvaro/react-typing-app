@@ -19,13 +19,13 @@ const CircleChart: React.FC<Props> = ({ data }) => {
   });
 
   return (
-    <ResponsiveContainer width={250} height={400}>
-      <PieChart width={250} height={400}>
+    <ResponsiveContainer width={250} height={200}>
+      <PieChart width={250} height={200}>
         <Tooltip />
         <Pie
           data={historyFormatted}
-          cx={120}
-          cy={200}
+          // cx={120}
+          // cy={200}
           innerRadius={60}
           outerRadius={80}
           paddingAngle={zero_counters === 1 ? 0 : 5}
