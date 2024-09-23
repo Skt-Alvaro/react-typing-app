@@ -1,36 +1,41 @@
 import React from "react";
-import {
-  PieChart,
-  Pie,
-  Sector,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { WORDS_HISTORY_LABELS } from "../../../utils/constants";
+import { pieChartColors } from "../../../utils/data";
 
 interface Props {
-  data: { name: string; value: number }[];
+  data: number[];
 }
 
 const CircleChart: React.FC<Props> = ({ data }) => {
-  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"];
+  let zero_counters = 0;
+  const historyFormatted = data.map((w, i) => {
+    if (w > 0) zero_counters += 1;
+
+    return {
+      name: WORDS_HISTORY_LABELS[i],
+      value: w,
+    };
+  });
 
   return (
     <ResponsiveContainer width={250} height={400}>
       <PieChart width={250} height={400}>
         <Tooltip />
         <Pie
-          data={data}
+          data={historyFormatted}
           cx={120}
           cy={200}
           innerRadius={60}
           outerRadius={80}
-          fill="#8884d8"
-          paddingAngle={5}
+          paddingAngle={zero_counters === 1 ? 0 : 5}
           dataKey="value"
         >
-          {data.map((_, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          {historyFormatted.map((_, index) => (
+            <Cell
+              key={`cell-${index}`}
+              fill={pieChartColors[index % pieChartColors.length]}
+            />
           ))}
         </Pie>
       </PieChart>
