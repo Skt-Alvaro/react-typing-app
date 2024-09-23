@@ -1,5 +1,8 @@
 import React from "react";
 import Results from "./utils/completed";
+import Tooltip from "./utils/tooltip";
+import ArrowPath from "../public/icons/arrow-path";
+import ChevronRight from "../public/icons/chevron-right";
 import { invalidClasses, keysToIgnore } from "../utils/data";
 import { useTheme } from "../context/theme";
 import { useConfig } from "../context/config";
@@ -7,11 +10,11 @@ import { BACKSPACE, SPACE } from "../utils/constants";
 import { WordsHistoryEnum } from "../utils/enum";
 
 const TypingArea = () => {
-  const { words, wordsNumber, isTyping, setIsTyping } = useConfig();
+  const { words, wordsNumber, isTyping, setIsTyping, handleGenerateWords } =
+    useConfig();
   const [renderableWords, setRenderableWords] = React.useState<string[]>(words);
   const [counter, setCounter] = React.useState<number>(0);
   const [time, setTime] = React.useState<number>(0);
-  const [allWordsLength, setAllWordsLength] = React.useState<number>(0);
   const [charClasses, setCharClasses] = React.useState<{
     [key: string]: string;
   }>({});
@@ -37,7 +40,7 @@ const TypingArea = () => {
     if (!ref.current) return;
 
     ref.current?.focus();
-  }, [theme]);
+  }, [theme, ref.current]);
 
   React.useEffect(() => {
     let interval: NodeJS.Timer = {} as NodeJS.Timer;
@@ -69,10 +72,6 @@ const TypingArea = () => {
   React.useEffect(() => {
     if (words.length === 0) return;
     if (!ref.current) return;
-
-    let n = 0;
-    words.forEach((word) => (n += word.length));
-    setAllWordsLength(n);
 
     setVisible(false);
     setTimeout(() => {
@@ -153,6 +152,27 @@ const TypingArea = () => {
       return () => clearInterval(timer);
     }
   }, [counter]);
+
+  const handleFinish = (action: "next" | "restart") => {
+    setCounter(0);
+    setActiveWord(0);
+    setActiveChar(0);
+    setWordClasses([]);
+    setCharClasses({});
+    setLastAction("");
+    setIsTyping(false);
+    setCompleted(false);
+    setWordsHistory([0, 0, 0, 0]);
+    setFullWordsHistory([0, 0, 0, 0]);
+    setTime(0);
+    setVisible(false);
+    setTimeout(() => {
+      setRenderableWords(words);
+      setVisible(true);
+    }, 200);
+
+    if (action === "next") handleGenerateWords(wordsNumber);
+  };
 
   /**
    * Adds more characters when typing after reaching the final length of the current word.
@@ -394,47 +414,74 @@ const TypingArea = () => {
   return (
     <div className="flex justify-center items-center h-screen">
       {completed ? (
-        <Results
-          fullWordsHistory={fullWordsHistory}
-          wordsHistory={wordsHistory}
-          time={time === 0 ? 1 : time}
-          totalCharacters={counter}
-        />
+        <div className="block space-y-10 mt-10">
+          <div className="flex items-center">
+            <Results
+              fullWordsHistory={fullWordsHistory}
+              wordsHistory={wordsHistory}
+              time={time === 0 ? 1 : time}
+              totalCharacters={counter}
+            />
+          </div>
+          <div className="w-full flex justify-center gap-x-16">
+            <Tooltip text="Next test">
+              <ChevronRight
+                className="w-7 cursor-pointer stroke-secondary"
+                onClick={() => handleFinish("next")}
+              />
+            </Tooltip>
+            <Tooltip text="Restart test">
+              <ArrowPath
+                className="w-7 cursor-pointer stroke-secondary"
+                onClick={() => handleFinish("restart")}
+              />
+            </Tooltip>
+          </div>
+        </div>
       ) : (
-        <div
-          ref={ref}
-          className={`flex flex-wrap focus:outline-none w-[90%] max-h-[170px] overflow-hidden transition-opacity duration-300 ${
-            visible ? "opacity-100" : "opacity-0"
-          }`}
-          onKeyDown={(e) => onKeyDown(e.key)}
-          tabIndex={0}
-        >
-          {visible
-            ? renderableWords.map((word, i) => (
-                <div
-                  key={word}
-                  id={i.toString()}
-                  className={`text-4xl m-2 ${
-                    activeWord === i
-                      ? "border-b-2 border-secondary"
-                      : wordClasses[i] === false
-                      ? "border-b border-error"
-                      : ""
-                  }`}
-                >
-                  {word.split("").map((char, index) => (
-                    <span
-                      id={`${i}-${index}`}
-                      className={`transition-colors duration-100 ${
-                        charClasses[`${i}-${index}`] || ""
-                      }`}
-                    >
-                      {char}
-                    </span>
-                  ))}
-                </div>
-              ))
-            : null}
+        <div className="w-[96%]">
+          <span
+            className={`transition-opacity duration-300 text-2xl ml-2 ${
+              isTyping ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            {activeWord + 1}/{wordsNumber}
+          </span>
+          <div
+            ref={ref}
+            className={`flex flex-wrap focus:outline-none max-h-[170px] overflow-hidden transition-opacity duration-300 ${
+              visible ? "opacity-100" : "opacity-0"
+            }`}
+            onKeyDown={(e) => onKeyDown(e.key)}
+            tabIndex={0}
+          >
+            {visible
+              ? renderableWords.map((word, i) => (
+                  <div
+                    key={word}
+                    id={i.toString()}
+                    className={`text-4xl m-2 ${
+                      activeWord === i
+                        ? "border-b-2 border-secondary"
+                        : wordClasses[i] === false
+                        ? "border-b border-error"
+                        : ""
+                    }`}
+                  >
+                    {word.split("").map((char, index) => (
+                      <span
+                        id={`${i}-${index}`}
+                        className={`transition-colors duration-100 ${
+                          charClasses[`${i}-${index}`] || ""
+                        }`}
+                      >
+                        {char}
+                      </span>
+                    ))}
+                  </div>
+                ))
+              : null}
+          </div>
         </div>
       )}
     </div>

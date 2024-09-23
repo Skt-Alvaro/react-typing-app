@@ -7,7 +7,7 @@ interface Props {
 }
 
 const Modal: React.FC<Props> = ({ visible, onClose }) => {
-  const { wordsNumber, setWordsNumber } = useConfig();
+  const { wordsNumber, handleGenerateWords } = useConfig();
   const [value, setValue] = React.useState<number>(wordsNumber);
   const modalWrapperRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -37,7 +37,7 @@ const Modal: React.FC<Props> = ({ visible, onClose }) => {
   };
 
   const handleContinue = () => {
-    setWordsNumber(value);
+    handleGenerateWords(value);
     onClose();
   };
 
