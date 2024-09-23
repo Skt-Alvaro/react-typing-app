@@ -55,4 +55,9 @@ export const themes = [
 
 export const wordsNumber = [5, 10, 25, 50, 100];
 
-export const gameModes = ["Words", "Time"];
+export const gameModes = [
+  "Words",
+  // "Time"
+];
+
+export const pieChartColors = ["#22c55f", "#eb4648", "#e5b310", "#6b7380"];

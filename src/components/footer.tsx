@@ -1,4 +1,5 @@
 import React from "react";
+import Modal from "./utils/modal";
 import ClockIcon from "../public/icons/clock";
 import WorldIcon from "../public/icons/world";
 import GearIcon from "../public/icons/gear";
@@ -10,7 +11,6 @@ import {
   wordsNumber as defaultWordsNumber,
 } from "../utils/data";
 import { gameModeEnum } from "../utils/enum";
-import Modal from "./utils/modal";
 
 const Footer = () => {
   const [visible, setVisible] = React.useState<boolean>(false);

@@ -7,9 +7,10 @@ import { BACKSPACE, SPACE } from "../utils/constants";
 import { WordsHistoryEnum } from "../utils/enum";
 
 const TypingArea = () => {
-  const { words, wordsNumber, setIsTyping } = useConfig();
+  const { words, wordsNumber, isTyping, setIsTyping } = useConfig();
   const [renderableWords, setRenderableWords] = React.useState<string[]>(words);
   const [counter, setCounter] = React.useState<number>(0);
+  const [time, setTime] = React.useState<number>(0);
   const [allWordsLength, setAllWordsLength] = React.useState<number>(0);
   const [charClasses, setCharClasses] = React.useState<{
     [key: string]: string;
@@ -37,6 +38,20 @@ const TypingArea = () => {
 
     ref.current?.focus();
   }, [theme]);
+
+  React.useEffect(() => {
+    let interval: NodeJS.Timer = {} as NodeJS.Timer;
+
+    if (isTyping) {
+      interval = setInterval(() => {
+        setTime((prev) => prev + 1);
+      }, 1000);
+    } else if (isTyping && time !== 0) {
+      clearInterval(interval);
+    }
+
+    return () => clearInterval(interval);
+  }, [time, isTyping]);
 
   /**
    * This effect is called when words change, so this restart all the states.
@@ -353,20 +368,27 @@ const TypingArea = () => {
   const handleComplete = (isLastCharCorrect: boolean) => {
     setCompleted(true);
     setIsTyping(false);
-    if (allWordsLength > counter) {
-      setFullWordsHistory((prev) => {
-        const newFullWordsHistory = [...prev];
-        newFullWordsHistory[WordsHistoryEnum.MISSED] =
-          allWordsLength - counter - 1;
-        return newFullWordsHistory;
-      });
 
-      setWordsHistory((prev) => {
-        const newWordsHistory = [...prev];
-        newWordsHistory[WordsHistoryEnum.MISSED] = allWordsLength - counter - 1;
-        return newWordsHistory;
-      });
-    }
+    wordClasses.forEach((wordClass: boolean, index) => {
+      if (!wordClass) {
+        const wordLength = words[index].length;
+        Array.from({ length: wordLength }).forEach((_, i) => {
+          if (charClasses[`${index}-${i}`] === undefined) {
+            setWordsHistory((prev) => {
+              const newWordsHistory = [...prev];
+              newWordsHistory[WordsHistoryEnum.MISSED] += 1;
+              return newWordsHistory;
+            });
+
+            setFullWordsHistory((prev) => {
+              const newFullWordsHistory = [...prev];
+              newFullWordsHistory[WordsHistoryEnum.MISSED] += 1;
+              return newFullWordsHistory;
+            });
+          }
+        });
+      }
+    });
   };
 
   return (
@@ -375,6 +397,8 @@ const TypingArea = () => {
         <Results
           fullWordsHistory={fullWordsHistory}
           wordsHistory={wordsHistory}
+          time={time === 0 ? 1 : time}
+          totalCharacters={counter}
         />
       ) : (
         <div

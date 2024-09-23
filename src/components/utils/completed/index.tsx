@@ -1,20 +1,22 @@
 import React from "react";
-import { WORDS_HISTORY_LABELS } from "../../../utils/constants";
-import { WordsHistoryEnum } from "../../../utils/enum";
 import CircleChart from "./circle-chart";
 import ResultsCard from "./results-card";
+import { WordsHistoryEnum } from "../../../utils/enum";
 
 interface Props {
   fullWordsHistory: number[];
   wordsHistory: number[];
+  time: number;
+  totalCharacters: number;
 }
 
-const Results: React.FC<Props> = ({ fullWordsHistory, wordsHistory }) => {
+const Results: React.FC<Props> = ({
+  fullWordsHistory,
+  wordsHistory,
+  time,
+  ...props
+}) => {
   const [accuracy, setAccuracy] = React.useState<number>(0);
-  const historyFormatted = fullWordsHistory.map((w, i) => ({
-    name: WORDS_HISTORY_LABELS[i],
-    value: w,
-  }));
 
   React.useEffect(() => {
     let all = fullWordsHistory.reduce((acc, word) => {
@@ -26,10 +28,17 @@ const Results: React.FC<Props> = ({ fullWordsHistory, wordsHistory }) => {
     setAccuracy(accuracy);
   }, [fullWordsHistory]);
 
+  const wpm = props.totalCharacters / (5 * (time / 60));
+
   return (
     <>
-      <CircleChart data={historyFormatted} />
-      <ResultsCard data={2} />
+      <CircleChart data={fullWordsHistory} />
+      <ResultsCard
+        accuracy={accuracy}
+        wpm={wpm}
+        time={time}
+        wordsHistory={wordsHistory}
+      />
     </>
   );
 };
