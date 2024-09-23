@@ -15,7 +15,8 @@ import { gameModeEnum } from "../utils/enum";
 const Footer = () => {
   const [visible, setVisible] = React.useState<boolean>(false);
   const { theme, toggleTheme } = useTheme();
-  const { wordsNumber, setWordsNumber, mode, setMode, isTyping } = useConfig();
+  const { wordsNumber, mode, setMode, isTyping, handleGenerateWords } =
+    useConfig();
 
   return (
     <>
@@ -59,7 +60,7 @@ const Footer = () => {
         <div className="flex items-center gap-x-4">
           {defaultWordsNumber.map((number: number) => (
             <span
-              onClick={() => setWordsNumber(number)}
+              onClick={() => handleGenerateWords(number)}
               className={`mb-px cursor-pointer transition-colors ${
                 wordsNumber === number
                   ? "font-bold text-footer-text-hover"

@@ -32,7 +32,7 @@ const Results: React.FC<Props> = ({
 
   return (
     <>
-      <CircleChart data={fullWordsHistory} />
+      <CircleChart data={wordsHistory} />
       <ResultsCard
         accuracy={accuracy}
         wpm={wpm}

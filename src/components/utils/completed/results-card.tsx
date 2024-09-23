@@ -32,7 +32,7 @@ const ResultsCard: React.FC<Props> = ({ accuracy, wpm, time, ...props }) => {
 
           <div className="flex justify-between items-center">
             <span className="text-sm font-medium">WPM</span>
-            <span className="text-2xl font-bold">{wpm}</span>
+            <span className="text-2xl font-bold">{Math.round(wpm)}</span>
           </div>
 
           <div className="flex justify-between items-center">
