@@ -30,16 +30,17 @@ const Footer = () => {
           className="px-2 py-1 rounded-lg bg-transparent hover:text-footer-text-hover cursor-pointer"
           onChange={(e) => toggleTheme(e.target.value)}
         >
-          {themes.map((theme) => (
-            <option className="text-black" value={theme.value}>
+          {themes.map((theme, index: number) => (
+            <option key={index} className="text-black" value={theme.value}>
               {theme.label}
             </option>
           ))}
         </select>
         <div className="h-auto w-px my-1 bg-primary rounded-full" />
         <div className="flex items-center gap-x-4">
-          {gameModes.map((gameMode) => (
+          {gameModes.map((gameMode, index: number) => (
             <div
+              key={index}
               onClick={() => setMode(gameMode.toLowerCase() as gameModeEnum)}
               className={`flex gap-x-1 cursor-pointer transition-colors ${
                 mode === gameMode.toLowerCase()
@@ -58,8 +59,9 @@ const Footer = () => {
         </div>
         <div className="h-auto w-px my-1 bg-primary rounded-full" />
         <div className="flex items-center gap-x-4">
-          {defaultWordsNumber.map((number: number) => (
+          {defaultWordsNumber.map((number: number, index: number) => (
             <span
+              key={index}
               onClick={() => handleGenerateWords(number)}
               className={`mb-px cursor-pointer transition-colors ${
                 wordsNumber === number
