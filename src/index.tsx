@@ -1,9 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "./styles/global.css";
+import { Providers } from "./providers";
 import App from "./App";
-import ThemeProvider from "./context/theme";
-import ConfigProvider from "./context/config";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
@@ -11,10 +10,8 @@ const root = ReactDOM.createRoot(
 
 root.render(
   <React.StrictMode>
-    <ThemeProvider>
-      <ConfigProvider>
-        <App />
-      </ConfigProvider>
-    </ThemeProvider>
+    <Providers>
+      <App />
+    </Providers>
   </React.StrictMode>
 );
