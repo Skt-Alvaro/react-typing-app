@@ -11,12 +11,20 @@ import {
   wordsNumber as defaultWordsNumber,
 } from "../utils/data";
 import { gameModeEnum } from "../utils/enum";
+import { useHistory } from "../context/history";
 
 const Footer = () => {
   const [visible, setVisible] = React.useState<boolean>(false);
   const { theme, toggleTheme } = useTheme();
+  const { completed, setCompleted } = useHistory();
   const { wordsNumber, mode, setMode, isTyping, handleGenerateWords } =
     useConfig();
+
+  const handleChangeWords = (number: number) => {
+    if (completed) setCompleted(false);
+
+    handleGenerateWords(number);
+  };
 
   return (
     <>
@@ -62,7 +70,7 @@ const Footer = () => {
           {defaultWordsNumber.map((number: number, index: number) => (
             <span
               key={index}
-              onClick={() => handleGenerateWords(number)}
+              onClick={() => handleChangeWords(number)}
               className={`mb-px cursor-pointer transition-colors ${
                 wordsNumber === number
                   ? "font-bold text-footer-text-hover"

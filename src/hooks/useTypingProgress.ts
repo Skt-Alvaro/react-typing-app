@@ -1,16 +1,15 @@
 import React from "react";
 import { useHistory } from "../context/history";
-import { WordsHistoryEnum } from "../utils/enum";
+import { endingActions, WordsHistoryEnum } from "../utils/enum";
 import { BACKSPACE, SPACE } from "../utils/constants";
 import { useConfig } from "../context/config";
-import { invalidClasses } from "../utils/data";
+import { invalidClasses, validKeys } from "../utils/data";
 import { useTheme } from "../context/theme";
 
 export const useTypingProgress = () => {
   const { words, wordsNumber, isTyping, setIsTyping, handleGenerateWords } =
     useConfig();
   const [renderableWords, setRenderableWords] = React.useState<string[]>(words);
-  const [counter, setCounter] = React.useState<number>(0);
   const [charClasses, setCharClasses] = React.useState<{
     [key: string]: string;
   }>({});
@@ -19,11 +18,20 @@ export const useTypingProgress = () => {
   const [activeChar, setActiveChar] = React.useState<number>(0);
   const [visible, setVisible] = React.useState<boolean>(true);
   const [lastAction, setLastAction] = React.useState<string>("");
-  const [time, setTime] = React.useState<number>(0);
-  const [completed, setCompleted] = React.useState<boolean>(false);
   const ref = React.useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
-  const { setWordsHistory, setFullWordsHistory } = useHistory();
+  const {
+    counter,
+    setCounter,
+    time,
+    setTime,
+    completed,
+    setCompleted,
+    endingType,
+    setEndingType,
+    setWordsHistory,
+    setFullWordsHistory,
+  } = useHistory();
 
   React.useEffect(() => {
     if (!ref.current) return;
@@ -53,6 +61,9 @@ export const useTypingProgress = () => {
     setCharClasses({});
     setLastAction("");
     setIsTyping(false);
+    setWordsHistory([0, 0, 0, 0]);
+    setFullWordsHistory([0, 0, 0, 0]);
+    setTime(0);
   }, [words]);
 
   React.useEffect(() => {
@@ -92,6 +103,12 @@ export const useTypingProgress = () => {
       return () => clearInterval(timer);
     }
   }, [counter]);
+
+  React.useEffect(() => {
+    if (!completed && endingType !== null)
+      if (endingType !== null) handleFinish(endingType);
+      else handleFinish(endingActions.NEXT);
+  }, [completed]);
 
   /**
    * Handle the extra characters addition at the end of a word when user keeps typing
@@ -238,7 +255,7 @@ export const useTypingProgress = () => {
     setWordClasses(currentWordClasses);
   };
 
-  const handleFinish = (action: "next" | "restart") => {
+  const handleFinish = (action: endingActions) => {
     setCounter(0);
     setActiveWord(0);
     setActiveChar(0);
@@ -256,7 +273,8 @@ export const useTypingProgress = () => {
       setVisible(true);
     }, 200);
 
-    if (action === "next") handleGenerateWords(wordsNumber);
+    if (action === endingActions.NEXT) handleGenerateWords(wordsNumber);
+    setEndingType(null);
   };
 
   const handleComplete = (isLastCharCorrect: boolean) => {
@@ -285,16 +303,87 @@ export const useTypingProgress = () => {
     });
   };
 
+  /**
+   * Handles key press events.
+   *
+   * Ignores specific keys based on `keysToIgnore`. If the space bar is pressed, it triggers the `handleSpace`
+   * function. If the backspace key is pressed, it triggers the `handleBackspace` function. For other keys,
+   * it calls `handleAddMoreChars` to add the character to the current word. The function then checks if the
+   * typed character matches the expected character in the word, updating the `charClasses` object to reflect
+   * whether the character is correct ("text-success") or incorrect ("text-error"). Finally, it increments
+   * the `counter` and advances the `activeChar` to the next position.
+   * If the user has typed all the words, it triggers the `checkIfWordsAreCorrect` function.
+   * To know if he typed all correctly, or failed, and end the game.
+   *
+   * @param {string} key - The key that was pressed by the user.
+   */
+  const onKeyDown = (key: string) => {
+    if (!validKeys.includes(key)) return;
+
+    if (key === SPACE) {
+      handleSpace();
+      return;
+    }
+
+    if (key === BACKSPACE) {
+      handleBackspace();
+      return;
+    }
+
+    handleAddMoreChars(key);
+
+    const element = document.getElementById(
+      `${activeWord}-${activeChar}`
+    ) as HTMLDivElement;
+
+    if (element) {
+      setFullWordsHistory((prev) => {
+        const newFullWordsHistory = [...prev];
+        key === element.textContent
+          ? (newFullWordsHistory[WordsHistoryEnum.CORRECT] += 1)
+          : (newFullWordsHistory[WordsHistoryEnum.INCORRECT] += 1);
+        return newFullWordsHistory;
+      });
+
+      setWordsHistory((prev) => {
+        const newWordsHistory = [...prev];
+        key === element.textContent
+          ? (newWordsHistory[WordsHistoryEnum.CORRECT] += 1)
+          : (newWordsHistory[WordsHistoryEnum.INCORRECT] += 1);
+        return newWordsHistory;
+      });
+
+      setCharClasses((prev) => {
+        const newClasses = { ...prev };
+        const elementKey = `${activeWord}-${activeChar}`;
+        if (key === element.textContent) {
+          newClasses[elementKey] = "text-success";
+        } else {
+          newClasses[elementKey] = "text-error";
+        }
+        return newClasses;
+      });
+    }
+
+    if (charClasses[`${wordsNumber - 1}-${words[wordsNumber - 1].length - 2}`])
+      handleComplete(key === element.textContent);
+
+    setCounter(counter + 1);
+    setActiveChar(activeChar + 1);
+  };
+
   return {
     handleBackspace,
     handleSpace,
     handleAddMoreChars,
     handleFinish,
     handleComplete,
+    onKeyDown,
     charClasses,
     setCharClasses,
     visible,
     ref,
+    time,
     activeWord,
     activeChar,
     lastAction,
@@ -304,6 +393,5 @@ export const useTypingProgress = () => {
     setActiveChar,
     renderableWords,
     wordClasses,
-    time,
   };
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
-import { WORDS_HISTORY_LABELS } from "../../../utils/constants";
+import { WORDS_HISTORY_LABELS } from "../../../utils/data";
 import { pieChartColors } from "../../../utils/data";
 
 interface Props {

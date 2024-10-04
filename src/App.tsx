@@ -1,12 +1,15 @@
 import TypingArea from "./components/typing-area";
+import Completed from "./components/completed";
 import Footer from "./components/footer";
 import { useTheme } from "./context/theme";
 import { useConfig } from "./context/config";
+import { useHistory } from "./context/history";
 import Logo from "./public/logo";
 
 function App() {
   const { theme } = useTheme();
   const { isTyping } = useConfig();
+  const { completed } = useHistory();
 
   return (
     <div
@@ -23,7 +26,7 @@ function App() {
           experience.
         </h1>
       </div>
-      <TypingArea />
+      {completed ? <Completed /> : <TypingArea />}
       <Footer />
     </div>
   );
