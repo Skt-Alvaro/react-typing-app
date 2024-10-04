@@ -9,3 +9,8 @@ export enum WordsHistoryEnum {
   EXTRA = 2,
   MISSED = 3,
 }
+
+export enum endingActions {
+  NEXT = "next",
+  RESTART = "restart",
+}
