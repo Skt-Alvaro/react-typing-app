@@ -1,7 +1,15 @@
 import React from "react";
-import { WordsHistoryEnum } from "../utils/enum";
+import { endingActions } from "../utils/enum";
 
 interface HistoryContextProps {
+  counter: number;
+  setCounter: React.Dispatch<React.SetStateAction<number>>;
+  time: number;
+  setTime: React.Dispatch<React.SetStateAction<number>>;
+  completed: boolean;
+  setCompleted: React.Dispatch<React.SetStateAction<boolean>>;
+  endingType: endingActions | null;
+  setEndingType: React.Dispatch<React.SetStateAction<endingActions | null>>;
   wordsHistory: number[];
   setWordsHistory: React.Dispatch<React.SetStateAction<number[]>>;
   fullWordsHistory: number[];
@@ -17,28 +25,37 @@ const HistoryContext = React.createContext({} as HistoryContextProps);
 export const useHistory = () => React.useContext(HistoryContext);
 
 const HistoryProvider = (props: Props) => {
+  const [counter, setCounter] = React.useState<number>(0);
+  const [time, setTime] = React.useState<number>(0);
+  const [completed, setCompleted] = React.useState<boolean>(false);
+  const [endingType, setEndingType] = React.useState<endingActions | null>(
+    null
+  );
+
   const [fullWordsHistory, setFullWordsHistory] = React.useState<number[]>([
-    WordsHistoryEnum.CORRECT,
-    WordsHistoryEnum.INCORRECT,
-    WordsHistoryEnum.EXTRA,
-    WordsHistoryEnum.MISSED,
+    0, 0, 0, 0,
   ]);
 
   const [wordsHistory, setWordsHistory] = React.useState<number[]>([
-    WordsHistoryEnum.CORRECT,
-    WordsHistoryEnum.INCORRECT,
-    WordsHistoryEnum.EXTRA,
-    WordsHistoryEnum.MISSED,
+    0, 0, 0, 0,
   ]);
 
   const historyProviderValue = React.useMemo(
     () => ({
+      counter,
+      setCounter,
+      time,
+      setTime,
+      completed,
+      setCompleted,
+      endingType,
+      setEndingType,
       wordsHistory,
       setWordsHistory,
       fullWordsHistory,
       setFullWordsHistory,
     }),
-    [wordsHistory, fullWordsHistory]
+    [counter, time, completed, endingType, wordsHistory, fullWordsHistory]
   );
 
   return (
